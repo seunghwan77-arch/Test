@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스탑워치</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(ellipse at 50% 0%, #4a4a4a 0%, #1a1a1a 60%, #0a0a0a 100%);
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* ── 본체 ── */
+    .watch-body {
+      position: relative;
+      width: 320px;
+      height: 360px;
+      border-radius: 50% / 45%;
+      background:
+        radial-gradient(ellipse at 40% 20%, #c8c8c8 0%, #888 40%, #555 70%, #333 100%);
+      box-shadow:
+        0 0 0 3px #222,
+        0 0 0 6px #555,
+        0 8px 40px rgba(0,0,0,0.9),
+        0 2px 6px rgba(255,255,255,0.12) inset,
+        0 -4px 10px rgba(0,0,0,0.6) inset;
+    }
+
+    /* 크라운 (상단 돌출부) */
+    .crown {
+      position: absolute;
+      top: -34px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 28px;
+      height: 40px;
+      background: linear-gradient(to right, #999, #ddd 40%, #aaa 60%, #777);
+      border-radius: 6px 6px 4px 4px;
+      box-shadow:
+        0 -2px 4px rgba(0,0,0,0.5),
+        2px 0 4px rgba(0,0,0,0.4),
+        -2px 0 4px rgba(0,0,0,0.4),
+        0 2px 2px rgba(255,255,255,0.15) inset;
+    }
+
+    .crown::before {
+      content: '';
+      position: absolute;
+      top: 6px; left: 4px; right: 4px;
+      height: 3px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 2px;
+      box-shadow: 0 5px 0 rgba(0,0,0,0.3), 0 10px 0 rgba(0,0,0,0.3), 0 15px 0 rgba(0,0,0,0.3);
+    }
+
+    /* 링 (베젤) */
+    .bezel {
+      position: absolute;
+      top: 18px; left: 18px; right: 18px; bottom: 18px;
+      border-radius: 50%;
+      background:
+        radial-gradient(ellipse at 35% 25%, #bbb 0%, #888 35%, #555 65%, #333 100%);
+      box-shadow:
+        0 0 0 2px #222,
+        0 4px 12px rgba(0,0,0,0.7) inset,
+        0 1px 2px rgba(255,255,255,0.2);
+    }
+
+    /* 다이얼 (시계 면) */
+    .dial {
+      position: absolute;
+      top: 26px; left: 26px; right: 26px; bottom: 26px;
+      border-radius: 50%;
+      background:
+        radial-gradient(ellipse at 45% 35%, #f5f0e8 0%, #e8dfc8 40%, #d4c8a8 80%, #c0b090 100%);
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.5) inset,
+        0 1px 1px rgba(255,255,255,0.6);
+      overflow: hidden;
+    }
+
+    /* 다이얼 눈금 */
+    .dial::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: repeating-conic-gradient(
+        rgba(0,0,0,0.08) 0deg 1deg,
+        transparent 1deg 6deg
+      );
+    }
+
+    /* 디스플레이 창 */
+    .lcd-window {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -54%);
+      width: 170px;
+      height: 72px;
+      border-radius: 10px;
+      background:
+        linear-gradient(160deg, #1a2a1a 0%, #0d1a0d 50%, #0a140a 100%);
+      box-shadow:
+        0 0 0 3px #2a2a1a,
+        0 0 0 5px #444,
+        0 3px 10px rgba(0,0,0,0.8) inset,
+        0 1px 1px rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .lcd-window::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 40%;
+      border-radius: 10px 10px 0 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.06), transparent);
+      pointer-events: none;
+    }
+
+    .time-display {
+      font-family: 'Orbitron', monospace;
+      font-size: 30px;
+      font-weight: 700;
+      color: #7fff7f;
+      text-shadow:
+        0 0 8px #00ff00,
+        0 0 20px rgba(0,255,0,0.4);
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+
+    .time-display .ms-part {
+      font-size: 18px;
+      color: #50dd50;
+      text-shadow: 0 0 6px #00cc00;
+    }
+
+    .lap-counter {
+      font-family: 'Orbitron', monospace;
+      font-size: 10px;
+      color: #3a8a3a;
+      letter-spacing: 1px;
+      text-shadow: 0 0 4px rgba(0,200,0,0.3);
+    }
+
+    /* 하단 버튼 영역 */
+    .buttons {
+      display: flex;
+      gap: 48px;
+      margin-top: 32px;
+      align-items: flex-end;
+    }
+
+    /* 공통 버튼 스타일 */
+    .btn {
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-cap {
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.08s, box-shadow 0.08s;
+    }
+
+    .btn-cap:active,
+    .btn-cap.pressed {
+      transform: translateY(3px);
+    }
+
+    /* 사이드 버튼 (랩 / 리셋) */
+    .btn-side .btn-cap {
+      width: 52px;
+      height: 52px;
+      background:
+        radial-gradient(ellipse at 40% 30%, #ccc 0%, #999 40%, #666 80%, #444 100%);
+      box-shadow:
+        0 6px 0 #222,
+        0 8px 12px rgba(0,0,0,0.7),
+        0 2px 3px rgba(255,255,255,0.25) inset,
+        0 -2px 4px rgba(0,0,0,0.4) inset;
+    }
+
+    .btn-side .btn-cap:active,
+    .btn-side .btn-cap.pressed {
+      box-shadow:
+        0 2px 0 #222,
+        0 3px 6px rgba(0,0,0,0.7),
+        0 1px 2px rgba(255,255,255,0.15) inset,
+        0 -1px 3px rgba(0,0,0,0.4) inset;
+    }
+
+    /* 메인 시작/중지 버튼 */
+    .btn-main .btn-cap {
+      width: 72px;
+      height: 72px;
+      background:
+        radial-gradient(ellipse at 40% 30%, #ff9a9a 0%, #e05050 35%, #b82020 70%, #8a1010 100%);
+      box-shadow:
+        0 8px 0 #4a0a0a,
+        0 12px 20px rgba(0,0,0,0.7),
+        0 3px 6px rgba(255,180,180,0.35) inset,
+        0 -3px 6px rgba(0,0,0,0.5) inset;
+    }
+
+    .btn-main .btn-cap:active,
+    .btn-main .btn-cap.pressed {
+      background:
+        radial-gradient(ellipse at 40% 30%, #ff7070 0%, #c83030 35%, #a01818 70%, #780808 100%);
+      box-shadow:
+        0 3px 0 #4a0a0a,
+        0 5px 10px rgba(0,0,0,0.7),
+        0 2px 4px rgba(255,120,120,0.2) inset,
+        0 -2px 4px rgba(0,0,0,0.5) inset;
+    }
+
+    .btn-main.running .btn-cap {
+      background:
+        radial-gradient(ellipse at 40% 30%, #9aff9a 0%, #40bb40 35%, #208020 70%, #104a10 100%);
+      box-shadow:
+        0 8px 0 #0a2a0a,
+        0 12px 20px rgba(0,0,0,0.7),
+        0 3px 6px rgba(180,255,180,0.35) inset,
+        0 -3px 6px rgba(0,0,0,0.5) inset;
+    }
+
+    .btn-main.running .btn-cap:active {
+      box-shadow:
+        0 3px 0 #0a2a0a,
+        0 5px 10px rgba(0,0,0,0.7),
+        0 2px 4px rgba(120,255,120,0.2) inset,
+        0 -2px 4px rgba(0,0,0,0.5) inset;
+    }
+
+    .btn-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #aaa;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    /* 랩 목록 */
+    .laps-panel {
+      margin-top: 28px;
+      width: 320px;
+      max-height: 220px;
+      overflow-y: auto;
+      background:
+        linear-gradient(to bottom, #1c1c1c, #141414);
+      border-radius: 12px;
+      box-shadow:
+        0 0 0 1px #333,
+        0 4px 16px rgba(0,0,0,0.8),
+        0 2px 4px rgba(255,255,255,0.04) inset;
+      padding: 4px 0;
+    }
+
+    .laps-panel::-webkit-scrollbar { width: 4px; }
+    .laps-panel::-webkit-scrollbar-track { background: transparent; }
+    .laps-panel::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+    .lap-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      border-bottom: 1px solid #222;
+      animation: slideIn 0.2s ease;
+    }
+
+    .lap-item:last-child { border-bottom: none; }
+
+    .lap-num {
+      font-size: 12px;
+      color: #666;
+      font-variant-numeric: tabular-nums;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .lap-time {
+      font-family: 'Orbitron', monospace;
+      font-size: 14px;
+      color: #ccc;
+      text-shadow: 0 0 4px rgba(200,200,200,0.2);
+    }
+
+    .lap-item.fastest .lap-time { color: #5dde5d; text-shadow: 0 0 6px rgba(80,220,80,0.4); }
+    .lap-item.slowest  .lap-time { color: #e05050; text-shadow: 0 0 6px rgba(220,80,80,0.4); }
+    .lap-item.current  { background: rgba(255,255,255,0.03); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="watch-body">
+    <div class="crown"></div>
+    <div class="bezel">
+      <div class="dial">
+        <div class="lcd-window">
+          <div class="time-display">
+            <span id="time-main">00:00</span><span class="ms-part">.<span id="time-ms">00</span></span>
+          </div>
+          <div class="lap-counter" id="lap-counter">LAP 00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <div class="btn btn-side">
+      <div class="btn-cap" id="btn-lap" onclick="lap()"></div>
+      <span class="btn-label">랩</span>
+    </div>
+
+    <div class="btn btn-main" id="btn-main">
+      <div class="btn-cap" onclick="toggle()"></div>
+      <span class="btn-label" id="btn-label">시작</span>
+    </div>
+
+    <div class="btn btn-side">
+      <div class="btn-cap" id="btn-reset" onclick="reset()"></div>
+      <span class="btn-label">재설정</span>
+    </div>
+  </div>
+
+  <div class="laps-panel" id="laps-panel" style="display:none"></div>
+
+  <script>
+    let startTime = 0, elapsed = 0, timer = null, running = false;
+    let lapTimes = [], lapStart = 0;
+
+    const mainEl    = document.getElementById('time-main');
+    const msEl      = document.getElementById('time-ms');
+    const lapCtr    = document.getElementById('lap-counter');
+    const btnMain   = document.getElementById('btn-main');
+    const btnLabel  = document.getElementById('btn-label');
+    const lapsPanel = document.getElementById('laps-panel');
+
+    function format(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const min = Math.floor(totalSec / 60);
+      const sec = totalSec % 60;
+      const cs  = Math.floor((ms % 1000) / 10);
+      return {
+        main: `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`,
+        ms:   String(cs).padStart(2,'0')
+      };
+    }
+
+    function tick() {
+      elapsed = Date.now() - startTime;
+      const t = format(elapsed);
+      mainEl.textContent = t.main;
+      msEl.textContent   = t.ms;
+    }
+
+    function toggle() {
+      if (!running) {
+        startTime = Date.now() - elapsed;
+        if (lapTimes.length === 0) lapStart = startTime;
+        timer = setInterval(tick, 33);
+        running = true;
+        btnMain.classList.add('running');
+        btnLabel.textContent = '중지';
+      } else {
+        clearInterval(timer);
+        running = false;
+        btnMain.classList.remove('running');
+        btnLabel.textContent = '시작';
+      }
+    }
+
+    function lap() {
+      if (!running && elapsed === 0) return;
+      const now = running ? Date.now() : (startTime + elapsed);
+      const lapMs = now - lapStart;
+      lapStart = now;
+      lapTimes.push(lapMs);
+      lapCtr.textContent = `LAP ${String(lapTimes.length).padStart(2,'0')}`;
+      renderLaps();
+    }
+
+    function renderLaps() {
+      if (lapTimes.length === 0) { lapsPanel.style.display = 'none'; return; }
+      lapsPanel.style.display = 'block';
+
+      const fastest = Math.min(...lapTimes);
+      const slowest = lapTimes.length > 1 ? Math.max(...lapTimes) : -1;
+
+      lapsPanel.innerHTML = [...lapTimes].reverse().map((ms, ri) => {
+        const i   = lapTimes.length - 1 - ri;
+        const num = i + 1;
+        const t   = format(ms);
+        const cls = ri === 0 ? 'current' :
+                    ms === fastest ? 'fastest' :
+                    ms === slowest ? 'slowest' : '';
+        return `<div class="lap-item ${cls}">
+          <span class="lap-num">랩 ${String(num).padStart(2,'0')}</span>
+          <span class="lap-time">${t.main}.${t.ms}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function reset() {
+      clearInterval(timer);
+      running = false; elapsed = 0;
+      lapTimes = []; lapStart = 0;
+      mainEl.textContent = '00:00';
+      msEl.textContent   = '00';
+      lapCtr.textContent = 'LAP 00';
+      btnMain.classList.remove('running');
+      btnLabel.textContent = '시작';
+      lapsPanel.style.display = 'none';
+      lapsPanel.innerHTML = '';
+    }
+
+    /* 버튼 누르는 시각 피드백 */
+    ['btn-lap','btn-reset'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('mousedown', () => el.classList.add('pressed'));
+      el.addEventListener('mouseup',   () => el.classList.remove('pressed'));
+      el.addEventListener('mouseleave',() => el.classList.remove('pressed'));
+    });
+
+    /* 키보드 단축키 */
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space') { e.preventDefault(); toggle(); }
+      if (e.code === 'KeyL')  lap();
+      if (e.code === 'KeyR')  reset();
+    });
+  </script>
+</body>
+</html>
